@@ -1,13 +1,6 @@
 {
-  "name": "halcyon-tutorial",
-  "description": "Companion app for the Halcyon tutorial",
-  "logo": "https://halcyon.sh/logo.svg",
-  "repository": "https://github.com/mietek/halcyon-tutorial",
-  "env": {
-    "TUTORIAL_HOME": {
-      "description": "Welcome message",
-      "required": false,
-      "value": "Welcome to Halcyon"
-    }
-  }
+  "name": "sms-haskell",
+  "description": "The Simple Mapping System, rebuilt in Haskell",
+  "name": "halcyon-tutorial",A
+  "repository": "https://github.com/laser/sms-haskell"
 }

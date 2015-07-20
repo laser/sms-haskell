@@ -1,68 +1,46 @@
-import Control.Concurrent.STM
-import Control.Monad.IO.Class
-import Data.Aeson
-import Data.Proxy
-import Data.Text
-import GHC.Generics
-import Network.Wai.Handler.Warp
-import Servant
-import System.Environment
-import System.IO
+{-# LANGUAGE OverloadedStrings #-}
 
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
+module Main (main) where
 
+import Network.JsonRpc.Server
+import System.IO (BufferMode (LineBuffering), hSetBuffering, stdout)
+import qualified Data.ByteString.Lazy.Char8 as B
+import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
+import Control.Monad (forM_, when)
+import Control.Monad.Trans (liftIO)
+import Control.Monad.Except (throwError)
+import Control.Monad.Reader (ReaderT, ask, runReaderT)
+import Control.Concurrent.MVar (MVar, newMVar, modifyMVar)
 
-newtype Note = Note
-    { contents :: Text
-    }
-  deriving (Generic, Show)
-
-instance FromJSON Note
-instance ToJSON Note
-
-
-emptyNotes :: IO (TVar [Note])
-emptyNotes =
-    newTVarIO []
-
-getNotes :: MonadIO m => TVar [Note] -> m [Note]
-getNotes notes =
-    liftIO $ readTVarIO notes
-
-postNote :: MonadIO m => TVar [Note] -> Note -> m [Note]
-postNote notes note =
-    liftIO $ do
-      T.putStrLn $ contents note
-      atomically $ do
-        oldNotes <- readTVar notes
-        let newNotes = note : oldNotes
-        writeTVar notes newNotes
-        return newNotes
-
-
-type NoteAPI =
-         Get Text
-    :<|> "notes" :> Get [Note]
-    :<|> "notes" :> ReqBody Note :> Post [Note]
-
-noteAPI :: Proxy NoteAPI
-noteAPI =
-    Proxy
-
-server :: Text -> TVar [Note] -> Server NoteAPI
-server home notes =
-         return home
-    :<|> getNotes notes
-    :<|> postNote notes
-
-
-main :: IO ()
 main = do
-    hSetBuffering stdout LineBuffering
-    env <- getEnvironment
-    let port = maybe 8080 read $ lookup "PORT" env
-        home = maybe "Welcome to Halcyon" T.pack $
-                lookup "TUTORIAL_HOME" env
-    notes <- emptyNotes
-    run port $ serve noteAPI $ server home notes
+  hSetBuffering stdout LineBuffering
+  contents <- B.getContents
+  count <- newMVar 0
+  forM_ (B.lines contents) $ \request -> do
+         response <- runReaderT (call methods request) count
+         B.putStrLn $ fromMaybe "" response
+
+type Server = ReaderT (MVar Integer) IO
+
+methods :: [Method Server]
+methods = [add, printSequence, increment]
+
+add = toMethod "add" f (Required "x" :+: Required "y" :+: ())
+    where f :: Double -> Double -> RpcResult Server Double
+          f x y = liftIO $ return (x + y)
+
+printSequence = toMethod "print_sequence" f params
+    where params = Required "string" :+:
+                   Optional "count" 1 :+:
+                   Optional "separator" ',' :+: ()
+          f :: String -> Int -> Char -> RpcResult Server ()
+          f str count sep = do
+              when (count < 0) $ throwError negativeCount
+              liftIO $ print $ intercalate [sep] $ replicate count str
+          negativeCount = rpcError (-32000) "negative count"
+
+increment = toMethod "increment_and_get_count" f ()
+    where f :: RpcResult Server Integer
+          f = ask >>= \count -> liftIO $ modifyMVar count inc
+              where inc x = return (x + 1, x + 1)
