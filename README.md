@@ -1,16 +1,14 @@
-_halcyon-tutorial_
+_The Simple Mapping System_
 ==================
 
-Companion app for the [Halcyon tutorial](https://halcyon.sh/tutorial/).
-
-Simple Haskell web service, built with [_servant_](https://hackage.haskell.org/package/servant).
+Haskell rewrite of the [Simple Mapping System](http://simplemappingsystem.com).
 
 
 Usage
 -----
 
 ```
-$ PORT=8080 halcyon-tutorial
+$ PORT=8080 sms-haskell
 ```
 
 
@@ -19,7 +17,7 @@ $ PORT=8080 halcyon-tutorial
 Installs in one command on most systems, using [Halcyon](https://halcyon.sh/):
 
 ```
-$ halcyon install https://github.com/mietek/halcyon-tutorial
+$ halcyon install https://github.com/laser/sms-haskell
 ```
 
 
@@ -33,4 +31,4 @@ Deploys in one click to a new [DigitalOcean](https://digitalocean.com/) droplet:
 About
 -----
 
-Made by [Miëtek Bak](https://mietek.io/).  Published under the [MIT X11 license](https://mietek.io/license/).
+Written by [Erin Swenson-Healey](http://github.com/laser), initially based on [Halcyon Tutorial](https://halcyon.sh/tutorial/).
