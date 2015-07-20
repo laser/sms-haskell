@@ -9,4 +9,5 @@ executable sms-haskell
   build-depends:      base,
                       json-rpc-server,
                       bytestring,
-                      mtl
+                      mtl,
+                      scotty

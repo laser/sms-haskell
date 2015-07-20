@@ -2,3 +2,4 @@ base-4.7.0.2
 bytestring-0.10.4.0
 json-rpc-server-0.2.0.0
 mtl-2.2.1
+scotty-0.10.2
