@@ -16,7 +16,7 @@ instance FromJSON Person where
     Person <$> o .: "name" <*> o .: "age"
 
 instance ToJSON Person where
-  toJSON p = object [ "name" .= name p, "age"  .= age p ]
+  toJSON p = object [ "name" .= name p, "age" .= age p ]
 
 add = toMethod "add" f (Required "x" :+: Required "y" :+: ())
   where f :: Monad m => Double -> Double -> RpcResult m Double
