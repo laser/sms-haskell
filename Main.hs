@@ -3,7 +3,7 @@
 module Main (main) where
 
 import System.Environment (getEnvironment)
-import qualified Web.Scotty as Scotty (scotty, post, json, body)
+import qualified Web.Scotty as Scotty
 import Network.JsonRpc.Server (Parameter(..), RpcResult, (:+:) (..), call, toMethod)
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson ((.=), (.:), withObject, object, FromJSON(..), ToJSON(..))
