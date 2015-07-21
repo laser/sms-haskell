@@ -11,4 +11,5 @@ executable sms-haskell
                       bytestring,
                       mtl,
                       scotty,
-                      string-conversions
+                      string-conversions,
+                      aeson
