@@ -36,6 +36,4 @@ main = do
 
   Scotty.scotty port $ do
     Scotty.post "/api" $ do
-      b <- Scotty.body
-      r <- (call [add, divide, greet] b)
-      Scotty.json $ maybe "" id r
+      Scotty.body >>= call [add, divide, greet] >>= Scotty.json . show
