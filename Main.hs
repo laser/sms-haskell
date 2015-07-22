@@ -3,37 +3,40 @@
 module Main (main) where
 
 import System.Environment (getEnvironment)
+
+import qualified Data.ByteString.Char8 as BC
+import qualified Data.Text.Lazy as TL
 import qualified Web.Scotty as Scotty
-import Network.JsonRpc.Server (Parameter(..), RpcResult, (:+:) (..), call, toMethod)
-import Control.Applicative ((<$>), (<*>))
-import Data.Aeson ((.=), (.:), withObject, object, FromJSON(..), ToJSON(..))
 
-data Person = Person { name :: String
-                     , age :: Integer } deriving (Show)
-
-instance FromJSON Person where
-  parseJSON = withObject "person" $ \o ->
-    Person <$> o .: "name" <*> o .: "age"
-
-instance ToJSON Person where
-  toJSON p = object [ "name" .= name p, "age" .= age p ]
-
-add = toMethod "add" f (Required "x" :+: Required "y" :+: ())
-  where f :: Monad m => Double -> Double -> RpcResult m Double
-        f x y = return (x + y)
-
-divide = toMethod "divide" f (Required "n" :+: Required "d" :+: ())
-  where f :: Monad m => Double -> Double -> RpcResult m Double
-        f n d = return (n / d)
-
-greet = toMethod "greet" f (Required "person" :+: ())
-  where f :: Monad m => Person -> RpcResult m String
-        f p = return ("Hello, you " ++ (show $ age p) ++ " year old person named " ++ (name p))
+import OAuth2 (OAuth2WebFlow(..), step1GetAuthorizeURL)
+import RPCService (handle)
 
 main = do
   env <- getEnvironment
   let port = maybe 3000 read $ lookup "PORT" env
+      x = maybe "" id $ lookup "GOOGLE_OAUTH_CLIENT_ID" env
+      y = maybe "" id $ lookup "GOOGLE_OAUTH_CLIENT_SECRET" env
 
   Scotty.scotty port $ do
+    Scotty.get "" $ do
+      Scotty.html $ "<h1>Welcome</h1><a href=\"/login\">click here to log in</a>"
+
+    Scotty.get "/oauth2callback" $ do
+      v <- Scotty.param "code"
+      Scotty.text v
+
+    Scotty.get "/login" $ do
+      let flow = OAuth2WebFlow { scope = "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+                               , redirectURI = "http://localhost:5000/oauth2callback"
+                               , authURI = "https://accounts.google.com/o/oauth2/auth"
+                               , tokenURI = "https://accounts.google.com/o/oauth2/token"
+                               , responseType = "code"
+                               , clientId = BC.pack x
+                               , clientSecret = BC.pack y }
+
+      case step1GetAuthorizeURL flow of
+        Just url -> Scotty.redirect (TL.pack url)
+        Nothing -> Scotty.text "you're in trouble"
+
     Scotty.post "/api" $ do
-      Scotty.body >>= call [add, divide, greet] >>= Scotty.json . show
+      Scotty.body >>= handle >>= Scotty.json . show
