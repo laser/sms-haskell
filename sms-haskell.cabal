@@ -10,4 +10,6 @@ executable sms-haskell
                       json-rpc-server,
                       scotty,
                       aeson,
-                      url
+                      url,
+                      string-conversions,
+                      bytestring

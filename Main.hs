@@ -2,10 +2,9 @@
 
 module Main (main) where
 
+import Data.String.Conversions (cs)
 import System.Environment (getEnvironment)
 
-import qualified Data.ByteString.Lazy.Char8 as BLC
-import qualified Data.Text.Lazy as TL
 import qualified Web.Scotty as Scotty
 
 import OAuth2 (OAuth2WebFlow(..), step1GetAuthorizeURL)
@@ -31,12 +30,18 @@ main = do
                                , authURI = "https://accounts.google.com/o/oauth2/auth"
                                , tokenURI = "https://accounts.google.com/o/oauth2/token"
                                , responseType = "code"
-                               , clientId = BLC.pack x
-                               , clientSecret = BLC.pack y }
+                               , clientId = cs x
+                               , clientSecret = cs y }
 
       case step1GetAuthorizeURL flow of
-        Just url -> Scotty.redirect (TL.pack url)
+        Just url -> Scotty.redirect (cs url)
         Nothing -> Scotty.text "you're in trouble"
 
     Scotty.post "/api" $ do
-      Scotty.body >>= handleRPC >>= Scotty.json . show
+      b <- Scotty.body
+      r <- handleRPC b
+      case r of
+        Just v -> do
+          Scotty.setHeader "Content-Type" "application/json"
+          Scotty.raw v
+        Nothing -> Scotty.raise "RPC error!"
