@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RPCService (handle) where
+module RPCService (handleRPC) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson ((.=), (.:), withObject, object, FromJSON(..), ToJSON(..))
 import Network.JsonRpc.Server (Parameter(..), RpcResult, Method, (:+:) (..), call, toMethod)
 
-import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy as BL
 
 data Person = Person { name :: String
                    , age :: Integer } deriving (Show)
@@ -33,5 +33,5 @@ greet = toMethod "greet" f (Required "person" :+: ())
   where f :: Monad m => Person -> RpcResult m String
         f p = return ("Hello, you " ++ (show $ age p) ++ " year old person named " ++ (name p))
 
-handle :: Monad m => B.ByteString -> m (Maybe B.ByteString)
-handle = call [add, divide, greet]
+handleRPC :: Monad m => BL.ByteString -> m (Maybe BL.ByteString)
+handleRPC = call [add, divide, greet]
