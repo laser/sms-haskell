@@ -3,20 +3,24 @@
 module RPCService (handleRPC) where
 
 import Control.Applicative ((<$>), (<*>))
-import Data.Aeson ((.=), (.:), withObject, object, FromJSON(..), ToJSON(..))
-import Network.JsonRpc.Server (Parameter(..), RpcResult, Method, (:+:) (..), call, toMethod)
+import Data.Aeson ((.=), (.:), withObject, object)
+import Data.Aeson (FromJSON(..), ToJSON(..))
+import Network.JsonRpc.Server (call, toMethod)
+import Network.JsonRpc.Server (Parameter(..), Method, (:+:)(..), RpcResult(..))
 
 import qualified Data.ByteString.Lazy.Char8 as BLC
 
 data Person = Person { name :: String
-                   , age :: Integer } deriving (Show)
+                     , age :: Integer } deriving (Show)
 
 instance FromJSON Person where
-  parseJSON = withObject "person" $ \o ->
-    Person <$> o .: "name" <*> o .: "age"
+  parseJSON = withObject "person" $ \o -> 
+    Person <$> o .: "name" 
+           <*> o .: "age"
 
 instance ToJSON Person where
-  toJSON p = object [ "name" .= name p, "age" .= age p ]
+  toJSON p = object [ "name" .= name p
+                    , "age" .= age p ]
 
 add :: Monad m => Method m
 add = toMethod "add" f (Required "x" :+: Required "y" :+: ())

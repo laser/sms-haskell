@@ -12,4 +12,8 @@ executable sms-haskell
                       aeson,
                       url,
                       string-conversions,
-                      bytestring
+                      bytestring,
+                      http-conduit,
+                      mtl,
+                      http-types,
+                      http-client
