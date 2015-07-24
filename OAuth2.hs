@@ -3,11 +3,13 @@
 module OAuth2 where
 
 import Control.Applicative ((<$>), (<*>))
+import Control.Exception (catch)
+import Control.Monad.Trans (liftIO)
 import Data.Aeson ((.=), (.:), (.:?), object, withObject, eitherDecode)
 import Data.Aeson (FromJSON(..), ToJSON(..))
 import Data.String.Conversions (cs)
 import Network.HTTP.Conduit (responseBody, setQueryString, urlEncodedBody, parseUrl, method, secure, port, requestHeaders, requestBody, newManager, tlsManagerSettings, httpLbs)
-import Network.HTTP.Conduit (Request(..), RequestBody(..), Response(..))
+import Network.HTTP.Conduit (Request(..), RequestBody(..), Response(..), HttpException(..))
 import Network.HTTP.Client (getUri)
 
 import qualified Data.ByteString.Lazy as BL
@@ -20,13 +22,13 @@ data OAuth2WebFlow = OAuth2WebFlow { scope :: String
                                    , clientId :: String
                                    , clientSecret :: String } deriving (Show)
 
-type OAuth2Code = BL.ByteString
-type OAuth2AccessToken = BL.ByteString
+type OAuth2Code = String
+type OAuth2AccessToken = String
 
 data OAuth2Tokens = OAuth2Tokens { accessToken :: String
                                  , refreshToken :: Maybe String
                                  , expiresIn :: Integer
-                                 , tokenType :: String } deriving (Read, Show)
+                                 , tokenType :: String } deriving (Show)
 
 instance FromJSON OAuth2Tokens where
   parseJSON = withObject "oauth2tokens" $ \o -> 
@@ -34,6 +36,28 @@ instance FromJSON OAuth2Tokens where
                  <*> o .:? "refresh_token"
                  <*> o .: "expires_in"
                  <*> o .: "token_type"
+
+data GoogleUserInfo = GoogleUserInfo { userId :: String
+                                     , userEmail :: Maybe String
+                                     , userName :: Maybe String } deriving (Show)
+
+instance FromJSON GoogleUserInfo where
+  parseJSON = withObject "googleuserinfo" $ \o ->
+    GoogleUserInfo <$> o .: "id"
+                   <*> o .:? "email"
+                   <*> o .:? "name"
+
+instance ToJSON GoogleUserInfo where
+  toJSON u = object [ "id" .= userId u
+                    , "email" .= userEmail u
+                    , "name" .= userName u ]
+
+issueRequest :: Request -> IO (Either HttpException BL.ByteString)
+issueRequest request = liftIO $ catch (issue request) (return . Left)
+  where 
+    issue r = do
+      response <- newManager tlsManagerSettings >>= httpLbs r
+      return . Right $ responseBody response
 
 getAuthorizationRequest :: OAuth2WebFlow -> IO Request
 getAuthorizationRequest flow = do
@@ -63,14 +87,23 @@ getExchangeRequest flow code = do
 
   return $ urlEncodedBody params request
 
-issueRequest :: Request -> IO (Response BL.ByteString)
-issueRequest request = newManager tlsManagerSettings >>= httpLbs request
-
 getAccessToken :: OAuth2WebFlow -> OAuth2Code -> IO (Either String OAuth2AccessToken)
 getAccessToken flow code = do
-  response <- getExchangeRequest flow code >>= issueRequest
 
-  let body = responseBody response
-      decoded = (eitherDecode body) :: (Either String OAuth2Tokens)
+  eBody <- getExchangeRequest flow code >>= issueRequest
+  
+  return $ case eBody of
+    Left httpE -> Left $ show httpE
+    Right body -> either (Left) (Right . cs . accessToken) ((eitherDecode body) :: (Either String OAuth2Tokens))
 
-  return $ either (Left) (Right . cs . accessToken) decoded
+getUserInfo :: OAuth2AccessToken -> IO (Either String GoogleUserInfo)
+getUserInfo token = do
+  request' <- parseUrl "https://www.googleapis.com/oauth2/v2/userinfo"
+
+  let request = setQueryString [("access_token", Just $ cs token)] request'
+
+  eBody <- issueRequest request
+
+  return $ case eBody of
+    Left httpE -> Left $ show httpE
+    Right body -> (eitherDecode body) :: (Either String GoogleUserInfo)

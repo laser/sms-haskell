@@ -8,7 +8,7 @@ import System.Environment (getEnvironment)
 
 import qualified Web.Scotty as Scotty
 
-import OAuth2 (OAuth2WebFlow(..), getAuthorizationURL, getExchangeRequest, getAccessToken)
+import OAuth2 (OAuth2WebFlow(..), getAuthorizationURL, getAccessToken, getUserInfo)
 import RPCService (handleRPC)
 
 main = do
@@ -32,7 +32,14 @@ main = do
     Scotty.get "/oauth2callback" $ do
       code <- Scotty.param "code"
       eToken <- liftIO $ getAccessToken flow code
-      either (Scotty.text . cs) (Scotty.text . cs) eToken
+
+      case eToken of
+        Left err -> Scotty.text $ cs err
+        Right token -> do
+          eInfo <- liftIO $ getUserInfo token
+          case eInfo of
+            Left err -> Scotty.text $ cs err
+            Right info -> Scotty.json info
 
     Scotty.get "/login" $ do
       url <- liftIO $ getAuthorizationURL flow
