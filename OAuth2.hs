@@ -1,6 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OAuth2 where
+module OAuth2 (
+  getAuthorizationURL,
+  getAccessToken,
+  getUserInfo,
+  GoogleUserInfo(..),
+  OAuth2WebFlow(..)
+) where
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (catch)
@@ -32,7 +38,7 @@ data OAuth2Tokens = OAuth2Tokens { accessToken :: String
                                  , tokenType :: String } deriving (Show)
 
 instance FromJSON OAuth2Tokens where
-  parseJSON = withObject "oauth2tokens" $ \o -> 
+  parseJSON = withObject "oauth2tokens" $ \o ->
     OAuth2Tokens <$> o .: "access_token"
                  <*> o .:? "refresh_token"
                  <*> o .: "expires_in"
@@ -55,7 +61,7 @@ instance ToJSON GoogleUserInfo where
 
 issueRequest :: Request -> IO (Either HttpException BL.ByteString)
 issueRequest request = liftIO $ catch (issue request) (return . Left)
-  where 
+  where
     issue r = do
       response <- newManager tlsManagerSettings >>= httpLbs r
       return . Right $ responseBody response

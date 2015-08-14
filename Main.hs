@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main (main) where
+module Main (
+  main
+) where
 
 import Control.Monad.Trans (liftIO)
 import Control.Monad.Trans.Except (runExceptT)

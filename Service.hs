@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Service (login) where
+module Service (
+  login
+) where
 
-import Data.Int (Int64)
 import Control.Error (syncIO, bimapExceptT)
 import Control.Monad.Trans.Except (ExceptT)
 import Control.Exception (SomeException)
+import Data.Int (Int64)
 import Database.MySQL.Simple (ConnectInfo(..), Connection, execute, connect, close, defaultConnectInfo)
 
 dbConfig :: ConnectInfo
@@ -26,23 +28,23 @@ login token userId email name =
   >> return token
 
 upsertUser :: String -> String -> String -> ExceptT SomeException IO Int64
-upsertUser userId email name = syncIO . withConnection $ \conn -> 
-  execute conn 
+upsertUser userId email name = syncIO . withConnection $ \conn ->
+  execute conn
     " INSERT INTO `users` (user_id, email, name, date_created) \
     \ VALUES (?, ?, ?, NOW()) \
     \ ON DUPLICATE KEY UPDATE email=(?), name=(?) "
     (userId, email, name, email, name)
 
 linkProjectAccess :: String -> String -> ExceptT SomeException IO Int64
-linkProjectAccess userId email = syncIO . withConnection $ \conn -> 
-  execute conn 
+linkProjectAccess userId email = syncIO . withConnection $ \conn ->
+  execute conn
     " UPDATE `project_access` \
     \ SET user_id = (?) \
     \ WHERE email=(?) "
     (userId, email)
 
 recordLogin :: String -> String -> ExceptT SomeException IO Int64
-recordLogin token userId = syncIO . withConnection $ \conn -> 
+recordLogin token userId = syncIO . withConnection $ \conn ->
   execute conn
     " INSERT INTO `logins` (access_token, user_id, expiry_time) \
     \ VALUES (?, ?, NOW()+INTERVAL 1 DAY) \
