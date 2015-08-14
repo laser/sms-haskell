@@ -1,4 +1,4 @@
-module Google.OAuth2.HTTPClient (
+module Google.OAuth2.APIClient (
   issueRequest
 ) where
 

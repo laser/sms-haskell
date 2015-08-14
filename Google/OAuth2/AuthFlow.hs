@@ -10,7 +10,7 @@ import Data.String.Conversions (cs)
 import Network.HTTP.Client (getUri)
 import Network.HTTP.Conduit (urlEncodedBody, parseUrl, setQueryString, Request(..), RequestBody(..), Response(..), HttpException(..))
 
-import Google.OAuth2.HTTPClient (issueRequest)
+import Google.OAuth2.APIClient (issueRequest)
 import Types (OAuth2WebFlow(..), OAuth2Tokens(..), GoogleAPIError(..))
 
 getAuthorizationRequest :: OAuth2WebFlow -> IO Request

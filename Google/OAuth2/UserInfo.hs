@@ -9,7 +9,7 @@ import Data.String.Conversions (cs)
 import GHC.Generics (Generic)
 import Network.HTTP.Conduit (parseUrl, requestHeaders)
 
-import Google.OAuth2.HTTPClient (issueRequest)
+import Google.OAuth2.APIClient (issueRequest)
 import Types (GoogleUserInfo(..), GoogleAPIError(..))
 
 import qualified Data.ByteString as BS

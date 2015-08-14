@@ -4,7 +4,7 @@ module Service (
   login
 ) where
 
-import Control.Error (syncIO, bimapExceptT)
+import Control.Error (syncIO)
 import Control.Monad.Trans.Except (ExceptT)
 import Control.Exception (SomeException)
 import Data.Int (Int64)
