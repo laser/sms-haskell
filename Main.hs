@@ -12,7 +12,8 @@ import Control.Exception (SomeException)
 
 import qualified Web.Scotty as Scotty
 
-import OAuth2 (GoogleUserInfo(..), OAuth2WebFlow(..), getAuthorizationURL, getAccessToken, getUserInfo)
+import OAuth2 (getAuthorizationURL, getAccessToken, getUserInfo)
+import Types (GoogleUserInfo(..), OAuth2WebFlow(..))
 import RPC (handleRPC)
 import Service (login)
 
@@ -27,7 +28,7 @@ main = do
                            , authURI = "https://accounts.google.com/o/oauth2/auth"
                            , tokenURI = "https://accounts.google.com/o/oauth2/token"
                            , responseType = "code"
-                           , clientId = cs x 
+                           , clientId = cs x
                            , clientSecret = cs y }
 
   Scotty.scotty port $ do
