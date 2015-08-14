@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RPCService (handleRPC) where
+module RPC (handleRPC) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson ((.=), (.:), withObject, object)

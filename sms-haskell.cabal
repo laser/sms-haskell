@@ -16,4 +16,7 @@ executable sms-haskell
                       http-conduit,
                       mtl,
                       http-types,
-                      http-client
+                      http-client,
+                      mysql-simple,
+                      transformers,
+                      errors
