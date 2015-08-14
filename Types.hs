@@ -1,13 +1,9 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module Types (
-  OAuth2WebFlow(..),
-  OAuth2Tokens(..),
-  GoogleUserInfo(..)
-) where
+module Types where
 
-import Data.Aeson (FromJSON, ToJSON)
-import GHC.Generics (Generic)
+import Control.Exception (Exception)
+import Data.Aeson ((.=), (.:), (.:?), object, withObject, FromJSON(..), ToJSON(..))
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString as BS
@@ -18,17 +14,36 @@ data OAuth2WebFlow = OAuth2WebFlow { scope :: String
                                    , tokenURI :: String
                                    , responseType :: String
                                    , clientId :: String
-                                   , clientSecret :: String } deriving (Show)
+                                   , clientSecret :: String } deriving (Eq, Show)
 
 data OAuth2Tokens = OAuth2Tokens { accessToken :: String
                                  , refreshToken :: Maybe String
                                  , expiresIn :: Integer
-                                 , tokenType :: String } deriving (Eq, Show, Generic)
+                                 , tokenType :: String } deriving (Eq, Show)
 
 data GoogleUserInfo = GoogleUserInfo { userId :: String
                                      , userEmail :: Maybe String
-                                     , userName :: Maybe String } deriving (Eq, Show, Generic)
+                                     , userName :: Maybe String } deriving (Eq, Show)
 
-instance FromJSON OAuth2Tokens
-instance FromJSON GoogleUserInfo
-instance ToJSON GoogleUserInfo
+data GoogleAPIError = RequestError String
+                    | ParseError String deriving (Eq, Show)
+
+instance Exception GoogleAPIError
+
+instance FromJSON OAuth2Tokens where
+  parseJSON = withObject "oauth2tokens" $ \o ->
+    OAuth2Tokens <$> o .: "access_token"
+                 <*> o .:? "refresh_token"
+                 <*> o .: "expires_in"
+                 <*> o .: "token_type"
+
+instance FromJSON GoogleUserInfo where
+  parseJSON = withObject "googleuserinfo" $ \o ->
+    GoogleUserInfo <$> o .: "id"
+                   <*> o .:? "email"
+                   <*> o .:? "name"
+
+instance ToJSON GoogleUserInfo where
+  toJSON u = object [ "id" .= userId u
+                    , "email" .= userEmail u
+                    , "name" .= userName u ]
