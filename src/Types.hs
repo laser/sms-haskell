@@ -28,6 +28,8 @@ data GoogleUserInfo = GoogleUserInfo { userId :: String
 
 data JSONDecodeError = JSONDecodeError String deriving (Eq, Show, Typeable)
 
+data WebAppException = WAEError String deriving (Eq, Show, Typeable)
+
 instance FromJSON OAuth2Tokens where
   parseJSON = withObject "oauth2tokens" $ \o ->
     OAuth2Tokens <$> o .: "access_token"
@@ -47,3 +49,4 @@ instance ToJSON GoogleUserInfo where
                     , "name" .= userName u ]
 
 instance Exception JSONDecodeError
+instance Exception WebAppException

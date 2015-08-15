@@ -21,4 +21,5 @@ executable sms-haskell
                       mysql-simple,
                       transformers,
                       errors,
-                      text
+                      text,
+                      wai
