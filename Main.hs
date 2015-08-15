@@ -7,7 +7,7 @@ module Main (
 import Data.String.Conversions (cs)
 import System.Environment (getEnv)
 
-import qualified Web.Scotty as Scotty
+import Web.Scotty (scotty)
 
 import Routing (routes)
 import Types (OAuth2WebFlow(..))
@@ -25,4 +25,4 @@ main = do
                            , clientId = cid
                            , clientSecret = csc }
 
-  Scotty.scotty prt $ routes flow
+  scotty prt $ routes flow

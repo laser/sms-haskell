@@ -19,4 +19,5 @@ executable sms-haskell
                       http-client,
                       mysql-simple,
                       transformers,
-                      errors
+                      errors,
+                      text

@@ -5,13 +5,18 @@ module Google.OAuth2.AuthFlow (
   getAccessToken
 ) where
 
+import Control.Arrow (left)
+import Control.Exception (toException, SomeException(..))
+import Control.Monad.Trans (liftIO)
+import Control.Monad.Trans.Except (ExceptT)
+import Control.Error.Util (hoistEither)
 import Data.Aeson (eitherDecode)
 import Data.String.Conversions (cs)
 import Network.HTTP.Client (getUri)
 import Network.HTTP.Conduit (urlEncodedBody, parseUrl, setQueryString, Request(..), RequestBody(..), Response(..), HttpException(..))
 
 import Google.OAuth2.APIClient (issueRequest)
-import Types (OAuth2WebFlow(..), OAuth2Tokens(..), GoogleAPIError(..))
+import Types (OAuth2WebFlow(..), OAuth2Tokens(..), JSONDecodeError(..))
 
 getAuthorizationRequest :: OAuth2WebFlow -> IO Request
 getAuthorizationRequest flow = do
@@ -39,13 +44,9 @@ getExchangeRequest flow code = do
 getAuthorizationURL :: OAuth2WebFlow -> IO String
 getAuthorizationURL flow = getAuthorizationRequest flow >>= return . show . getUri
 
-getAccessToken :: OAuth2WebFlow -> String -> IO (Either GoogleAPIError String)
+getAccessToken :: OAuth2WebFlow -> String -> ExceptT SomeException IO String
 getAccessToken flow code = do
-
-  eBody <- getExchangeRequest flow code >>= issueRequest
-
-  return $ case eBody of
-    Left ex -> Left . RequestError $ show ex
-    Right body -> case eitherDecode body of
-      Left err -> Left $ ParseError err
-      Right info -> Right . cs . accessToken $ info
+  request <- liftIO $ getExchangeRequest flow code
+  body    <- issueRequest request
+  info    <- hoistEither $ left (toException . JSONDecodeError) $ eitherDecode body
+  return . cs . accessToken $ info

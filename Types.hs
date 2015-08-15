@@ -4,6 +4,7 @@ module Types where
 
 import Control.Exception (Exception)
 import Data.Aeson ((.=), (.:), (.:?), object, withObject, FromJSON(..), ToJSON(..))
+import Data.Typeable (Typeable)
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString as BS
@@ -25,10 +26,7 @@ data GoogleUserInfo = GoogleUserInfo { userId :: String
                                      , userEmail :: Maybe String
                                      , userName :: Maybe String } deriving (Eq, Show)
 
-data GoogleAPIError = RequestError String
-                    | ParseError String deriving (Eq, Show)
-
-instance Exception GoogleAPIError
+data JSONDecodeError = JSONDecodeError String deriving (Eq, Show, Typeable)
 
 instance FromJSON OAuth2Tokens where
   parseJSON = withObject "oauth2tokens" $ \o ->
@@ -47,3 +45,5 @@ instance ToJSON GoogleUserInfo where
   toJSON u = object [ "id" .= userId u
                     , "email" .= userEmail u
                     , "name" .= userName u ]
+
+instance Exception JSONDecodeError
