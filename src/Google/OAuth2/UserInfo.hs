@@ -10,7 +10,6 @@ import Control.Exception (toException, SomeException(..))
 import Control.Monad.Trans.Except (ExceptT)
 import Data.Aeson (eitherDecode)
 import Data.String.Conversions (cs)
-import GHC.Generics (Generic)
 import Network.HTTP.Conduit (parseUrl, requestHeaders)
 
 import Google.OAuth2.APIClient (issueRequest)

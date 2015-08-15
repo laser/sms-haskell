@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Service (
+module Persistence (
   login
 ) where
 

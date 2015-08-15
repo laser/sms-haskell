@@ -1,6 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Controllers where
+module Controller (
+  handleIndex,
+  handleLogin,
+  handleOAuthCallback,
+  handleRPC
+) where
 
 import Control.Exception (SomeException)
 import Control.Monad.Trans (liftIO)
@@ -12,8 +17,8 @@ import Web.Scotty.Trans (ActionT, ScottyT)
 
 import Google.OAuth2.AuthFlow (getAuthorizationURL, getAccessToken)
 import qualified Google.OAuth2.UserInfo as UI (get)
-import RPC (handleRPC)
-import Service (login)
+import RPC (dispatch)
+import Persistence (login)
 import Types (OAuth2WebFlow(..), GoogleUserInfo(..))
 
 handleIndex :: ActionM ()
@@ -42,9 +47,9 @@ handleOAuthCallback flow = do
             Right token -> text "Success! User logged in."
         Right _ -> text "Error: Can't log in without Google username, id, and email address."
 
-handleAPI :: ActionT TL.Text IO ()
-handleAPI = do
-  r <- body >>= handleRPC
+handleRPC :: ActionT TL.Text IO ()
+handleRPC = do
+  r <- body >>= dispatch
   case r of
     Just v -> do
       setHeader "Content-Type" "application/json"

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RPC (handleRPC) where
+module RPC (dispatch) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson ((.=), (.:), withObject, object)
@@ -14,8 +14,8 @@ data Person = Person { name :: String
                      , age :: Integer } deriving (Show)
 
 instance FromJSON Person where
-  parseJSON = withObject "person" $ \o -> 
-    Person <$> o .: "name" 
+  parseJSON = withObject "person" $ \o ->
+    Person <$> o .: "name"
            <*> o .: "age"
 
 instance ToJSON Person where
@@ -42,5 +42,5 @@ echo = toMethod "echo" f (Required "person" :+: ())
   where f :: Monad m => Person -> RpcResult m Person
         f p = return p
 
-handleRPC :: Monad m => BLC.ByteString -> m (Maybe BLC.ByteString)
-handleRPC = call [add, divide, greet]
+dispatch :: Monad m => BLC.ByteString -> m (Maybe BLC.ByteString)
+dispatch = call [add, divide, greet]

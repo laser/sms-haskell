@@ -8,7 +8,7 @@ import Data.String.Conversions (cs)
 import System.Environment (getEnv)
 import Web.Scotty (scotty)
 
-import Routing (routes)
+import Routes (routes)
 import Types (OAuth2WebFlow(..))
 
 main = do
