@@ -6,7 +6,6 @@ module Main (
 
 import Data.String.Conversions (cs)
 import System.Environment (getEnv)
-
 import Web.Scotty (scotty)
 
 import Routing (routes)
