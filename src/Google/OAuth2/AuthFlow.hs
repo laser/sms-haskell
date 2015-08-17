@@ -5,18 +5,23 @@ module Google.OAuth2.AuthFlow (
   getAccessToken
 ) where
 
-import Control.Arrow (left)
-import Control.Exception (toException, SomeException(..))
-import Control.Monad.Trans (liftIO)
-import Control.Monad.Trans.Except (ExceptT)
-import Control.Error.Util (hoistEither)
-import Data.Aeson (eitherDecode)
-import Data.String.Conversions (cs)
-import Network.HTTP.Client (getUri)
-import Network.HTTP.Conduit (urlEncodedBody, parseUrl, setQueryString, Request(..), RequestBody(..), Response(..), HttpException(..))
+import           Control.Arrow              (left)
+import           Control.Error.Util         (hoistEither)
+import           Control.Exception          (SomeException (..), toException)
+import           Control.Monad.Trans        (liftIO)
+import           Control.Monad.Trans.Except (ExceptT)
+import           Data.Aeson                 (eitherDecode)
+import           Data.String.Conversions    (cs)
+import           Network.HTTP.Client        (getUri)
+import           Network.HTTP.Conduit       (HttpException (..), Request (..),
+                                             RequestBody (..), Response (..),
+                                             parseUrl, setQueryString,
+                                             urlEncodedBody)
 
-import Google.OAuth2.APIClient (issueRequest)
-import Types (OAuth2WebFlow(..), OAuth2Tokens(..), JSONDecodeError(..))
+import           Google.OAuth2.APIClient    (issueRequest)
+import           Types                      (JSONDecodeError (..),
+                                             OAuth2Tokens (..),
+                                             OAuth2WebFlow (..))
 
 getAuthorizationRequest :: OAuth2WebFlow -> IO Request
 getAuthorizationRequest flow = do

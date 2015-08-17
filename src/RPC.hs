@@ -2,16 +2,17 @@
 
 module RPC (dispatch) where
 
-import Control.Applicative ((<$>), (<*>))
-import Data.Aeson ((.=), (.:), withObject, object)
-import Data.Aeson (FromJSON(..), ToJSON(..))
-import Network.JsonRpc.Server (call, toMethod)
-import Network.JsonRpc.Server (Parameter(..), Method, (:+:)(..), RpcResult(..))
+import           Control.Applicative        ((<$>), (<*>))
+import           Data.Aeson                 (object, withObject, (.:), (.=))
+import           Data.Aeson                 (FromJSON (..), ToJSON (..))
+import           Network.JsonRpc.Server     (call, toMethod)
+import           Network.JsonRpc.Server     ((:+:) (..), Method, Parameter (..),
+                                             RpcResult (..))
 
 import qualified Data.ByteString.Lazy.Char8 as BLC
 
 data Person = Person { name :: String
-                     , age :: Integer } deriving (Show)
+                     , age  :: Integer } deriving (Show)
 
 instance FromJSON Person where
   parseJSON = withObject "person" $ \o ->

@@ -4,19 +4,17 @@ module Main (
   main
 ) where
 
-import Control.Exception (SomeException)
-import Control.Monad.Trans.Except (runExceptT, ExceptT)
-import Data.ByteString.Builder (lazyByteString)
-import Data.String.Conversions (cs)
-import Network.HTTP.Types (Status, status500)
-import Network.Wai (Response, responseBuilder)
-import System.Environment (getEnv)
-import Web.Scotty.Trans (scottyT)
+import           Control.Exception          (SomeException)
+import           Control.Monad.Trans.Except (ExceptT, runExceptT)
+import           Data.ByteString.Builder    (lazyByteString)
+import           Data.String.Conversions    (cs)
+import           Network.HTTP.Types         (Status, status500)
+import           Network.Wai                (Response, responseBuilder)
+import           System.Environment         (getEnv)
+import           Web.Scotty.Trans           (scottyT)
 
-import Routes (routes)
-import Types (OAuth2WebFlow(..))
-
-import qualified Temp as T
+import           Routes                     (routes)
+import           Types                      (OAuth2WebFlow (..))
 
 main :: IO ()
 main = do

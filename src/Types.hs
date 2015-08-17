@@ -2,29 +2,30 @@
 
 module Types where
 
-import Control.Exception (Exception)
-import Data.Aeson ((.=), (.:), (.:?), object, withObject, FromJSON(..), ToJSON(..))
-import Data.Typeable (Typeable)
+import           Control.Exception    (Exception)
+import           Data.Aeson           (FromJSON (..), ToJSON (..), object,
+                                       withObject, (.:), (.:?), (.=))
+import           Data.Typeable        (Typeable)
 
+import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString as BS
 
-data OAuth2WebFlow = OAuth2WebFlow { scope :: String
-                                   , redirectURI :: String
-                                   , authURI :: String
-                                   , tokenURI :: String
+data OAuth2WebFlow = OAuth2WebFlow { scope        :: String
+                                   , redirectURI  :: String
+                                   , authURI      :: String
+                                   , tokenURI     :: String
                                    , responseType :: String
-                                   , clientId :: String
+                                   , clientId     :: String
                                    , clientSecret :: String } deriving (Eq, Show)
 
-data OAuth2Tokens = OAuth2Tokens { accessToken :: String
+data OAuth2Tokens = OAuth2Tokens { accessToken  :: String
                                  , refreshToken :: Maybe String
-                                 , expiresIn :: Integer
-                                 , tokenType :: String } deriving (Eq, Show)
+                                 , expiresIn    :: Integer
+                                 , tokenType    :: String } deriving (Eq, Show)
 
-data GoogleUserInfo = GoogleUserInfo { userId :: String
+data GoogleUserInfo = GoogleUserInfo { userId    :: String
                                      , userEmail :: Maybe String
-                                     , userName :: Maybe String } deriving (Eq, Show)
+                                     , userName  :: Maybe String } deriving (Eq, Show)
 
 data JSONDecodeError = JSONDecodeError String deriving (Eq, Show, Typeable)
 

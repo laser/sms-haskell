@@ -7,19 +7,22 @@ module Controller (
   handleRPC
 ) where
 
-import Control.Exception (toException, SomeException(..))
-import Control.Monad.Trans (liftIO)
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Except (runExceptT, throwE, ExceptT)
-import Data.String.Conversions (cs)
-import qualified Data.Text.Lazy as TL
-import Web.Scotty.Trans (ActionT, ScottyT, get, post, html, redirect, setHeader, raw, body, raise, param, text)
+import           Control.Exception          (SomeException (..), toException)
+import           Control.Monad.Trans        (liftIO)
+import           Control.Monad.Trans.Class  (lift)
+import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
+import           Data.String.Conversions    (cs)
+import qualified Data.Text.Lazy             as TL
+import           Web.Scotty.Trans           (ActionT, ScottyT, body, get, html,
+                                             param, post, raise, raw, redirect,
+                                             setHeader, text)
 
-import Google.OAuth2.AuthFlow (getAuthorizationURL, getAccessToken)
-import qualified Google.OAuth2.UserInfo as UI (get)
-import RPC (dispatch)
-import Persistence (login)
-import Types
+import           Google.OAuth2.AuthFlow     (getAccessToken,
+                                             getAuthorizationURL)
+import qualified Google.OAuth2.UserInfo     as UI (get)
+import           Persistence                (login)
+import           RPC                        (dispatch)
+import           Types
 
 handleIndex  :: ActionT TL.Text (ExceptT SomeException IO) ()
 handleIndex = html $ "<h1>Welcome</h1><a href=\"/login\">click here to log in</a>"

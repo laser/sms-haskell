@@ -4,11 +4,13 @@ module Persistence (
   login
 ) where
 
-import Control.Error (syncIO)
-import Control.Monad.Trans.Except (ExceptT)
-import Control.Exception (SomeException)
-import Data.Int (Int64)
-import Database.MySQL.Simple (ConnectInfo(..), Connection, execute, connect, close, defaultConnectInfo)
+import           Control.Error              (syncIO)
+import           Control.Exception          (SomeException)
+import           Control.Monad.Trans.Except (ExceptT)
+import           Data.Int                   (Int64)
+import           Database.MySQL.Simple      (ConnectInfo (..), Connection,
+                                             close, connect, defaultConnectInfo,
+                                             execute)
 
 dbConfig :: ConnectInfo
 dbConfig = defaultConnectInfo { connectDatabase = "sms" }

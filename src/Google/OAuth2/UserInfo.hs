@@ -1,21 +1,23 @@
-{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Google.OAuth2.UserInfo (
   get
 ) where
 
-import Control.Arrow (left)
-import Control.Error.Util (hoistEither)
-import Control.Exception (toException, SomeException(..))
-import Control.Monad.Trans.Except (ExceptT)
-import Data.Aeson (eitherDecode)
-import Data.String.Conversions (cs)
-import Network.HTTP.Conduit (parseUrl, requestHeaders)
+import           Control.Arrow              (left)
+import           Control.Error.Util         (hoistEither)
+import           Control.Exception          (SomeException (..), toException)
+import           Control.Monad.Trans.Except (ExceptT)
+import           Data.Aeson                 (eitherDecode)
+import           Data.String.Conversions    (cs)
+import           Network.HTTP.Conduit       (parseUrl, requestHeaders)
 
-import Google.OAuth2.APIClient (issueRequest)
-import Types (GoogleUserInfo(..), JSONDecodeError(..))
+import           Google.OAuth2.APIClient    (issueRequest)
+import           Types                      (GoogleUserInfo (..),
+                                             JSONDecodeError (..))
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString            as BS
 
 get :: String -> ExceptT SomeException IO GoogleUserInfo
 get token = do
