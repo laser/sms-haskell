@@ -4,17 +4,19 @@ module Main (
   main
 ) where
 
-import           Control.Exception          (SomeException)
-import           Control.Monad.Trans.Except (ExceptT, runExceptT)
-import           Data.ByteString.Builder    (lazyByteString)
-import           Data.String.Conversions    (cs)
-import           Network.HTTP.Types         (Status, status500)
-import           Network.Wai                (Response, responseBuilder)
-import           System.Environment         (getEnv)
-import           Web.Scotty.Trans           (scottyT)
+import           Control.Exception                    (SomeException)
+import           Control.Monad.Trans.Except           (ExceptT, runExceptT)
+import           Data.ByteString.Builder              (lazyByteString)
+import           Data.String.Conversions              (cs)
+import           Network.HTTP.Types                   (Status, status500)
+import           Network.Wai                          (Response,
+                                                       responseBuilder)
+import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import           System.Environment                   (getEnv)
+import           Web.Scotty.Trans                     (middleware, scottyT)
 
-import           Routes                     (routes)
-import           Types                      (OAuth2WebFlow (..))
+import           Routes                               (routes)
+import           Types                                (OAuth2WebFlow (..))
 
 main :: IO ()
 main = do
@@ -30,7 +32,9 @@ main = do
                            , clientId = cid
                            , clientSecret = csc }
 
-  scottyT prt runAction $ routes flow
+  scottyT prt runAction $ do
+    middleware logStdoutDev
+    routes flow
 
 runAction :: ExceptT SomeException IO Response -> IO Response
 runAction et = do

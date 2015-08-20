@@ -23,4 +23,5 @@ executable sms-haskell
                       text,
                       transformers,
                       url,
-                      wai
+                      wai,
+                      wai-extra
