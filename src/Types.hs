@@ -3,8 +3,8 @@
 module Types where
 
 import           Control.Exception    (Exception)
-import           Data.Aeson           (FromJSON (..), ToJSON (..), object,
-                                       withObject, (.:), (.:?), (.=))
+import           Data.Aeson           (FromJSON (..), ToJSON (..), Value (..),
+                                       object, (.:), (.:?), (.=))
 import           Data.Typeable        (Typeable)
 
 import qualified Data.ByteString      as BS
@@ -32,17 +32,15 @@ data JSONDecodeError = JSONDecodeError String deriving (Eq, Show, Typeable)
 data WebAppException = WAEError String deriving (Eq, Show, Typeable)
 
 instance FromJSON OAuth2Tokens where
-  parseJSON = withObject "oauth2tokens" $ \o ->
-    OAuth2Tokens <$> o .: "access_token"
-                 <*> o .:? "refresh_token"
-                 <*> o .: "expires_in"
-                 <*> o .: "token_type"
+  parseJSON (Object o) = OAuth2Tokens <$> o .: "access_token"
+                                      <*> o .:? "refresh_token"
+                                      <*> o .: "expires_in"
+                                      <*> o .: "token_type"
 
 instance FromJSON GoogleUserInfo where
-  parseJSON = withObject "googleuserinfo" $ \o ->
-    GoogleUserInfo <$> o .: "id"
-                   <*> o .:? "email"
-                   <*> o .:? "name"
+  parseJSON (Object o) = GoogleUserInfo <$> o .: "id"
+                                        <*> o .:? "email"
+                                        <*> o .:? "name"
 
 instance ToJSON GoogleUserInfo where
   toJSON u = object [ "id" .= userId u
@@ -51,3 +49,12 @@ instance ToJSON GoogleUserInfo where
 
 instance Exception JSONDecodeError
 instance Exception WebAppException
+
+data RPC = Request { method  :: String
+                   , cid     :: String
+                   , version :: String } deriving (Eq, Show)
+
+instance FromJSON RPC where
+  parseJSON (Object o) = Request <$> o .: "method"
+                                 <*> o .: "id"
+                                 <*> o .: "jsonrpc"

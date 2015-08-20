@@ -11,8 +11,10 @@ import           Control.Exception          (SomeException (..), toException)
 import           Control.Monad.Trans        (liftIO)
 import           Control.Monad.Trans.Class  (lift)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
+import           Data.Aeson                 (decode)
 import           Data.String.Conversions    (cs)
 import qualified Data.Text.Lazy             as TL
+import           Text.Printf                (printf)
 import           Web.Scotty.Trans           (ActionT, ScottyT, body, get, html,
                                              param, post, raise, raw, redirect,
                                              setHeader, text)
@@ -46,9 +48,19 @@ handleOAuthCallback flow = do
 
 handleRPC :: ActionT TL.Text (ExceptT SomeException IO) ()
 handleRPC = do
-  result <- body >>= dispatch
-  case result of
-    Just result' -> do
+  x <- body
+  case decode x of
+    Just Request { method = "barrister-idl", cid = cid', version = version' } -> do
+      contents <- liftIO $ readFile "./sms.json" -- this is dumb: all of this block should be rewritten
       setHeader "Content-Type" "application/json"
-      raw result'
-    Nothing -> lift . throwE . toException $ WAEError "RPC Error!"
+      raw . cs $ mkRawResponse cid' version' contents
+    Just _ -> do
+      result <- dispatch x
+      case result of
+        Just result' -> do
+          setHeader "Content-Type" "application/json"
+          raw result'
+        Nothing -> lift . throwE . toException $ WAEError "RPC Error1!"
+    Nothing -> lift . throwE . toException $ WAEError "RPC Error2!"
+  where mkRawResponse :: String -> String -> String -> String
+        mkRawResponse cid version result = printf "{ \"id\": \"%s\", \"version\": \"%s\", \"result\": %s }" cid version result
