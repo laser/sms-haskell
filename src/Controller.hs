@@ -55,7 +55,7 @@ handleRPC = do
       setHeader "Content-Type" "application/json"
       raw . cs $ mkRawResponse cid' version' contents
     Just _ -> do
-      result <- dispatch x
+      result <- liftIO $ dispatch x
       case result of
         Just result' -> do
           setHeader "Content-Type" "application/json"
