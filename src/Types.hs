@@ -14,10 +14,10 @@ import qualified Data.ByteString         as BS
 import qualified Data.Text.Lazy          as TL
 
 data OAuth2WebFlow = OAuth2WebFlow { scope        :: String
-                                   , redirectURI  :: String
                                    , authURI      :: String
                                    , tokenURI     :: String
                                    , responseType :: String
+                                   , redirectURI  :: String
                                    , clientId     :: String
                                    , clientSecret :: String } deriving (Eq, Show)
 

@@ -3,16 +3,17 @@
 module RPC (dispatch) where
 
 
-import           Control.Error.Util     (hoistEither)
-import           Control.Monad.IO.Class (MonadIO)
-import           Control.Monad.Trans    (liftIO)
-import           Network.JsonRpc.Server ((:+:) (..), Method (..), Parameter (..),
-                                         RpcResult (..), call, toMethod, rpcError)
+import           Control.Error.Util         (hoistEither)
+import           Control.Monad.IO.Class     (MonadIO)
+import           Control.Monad.Trans        (liftIO)
+import           Network.JsonRpc.Server     ((:+:) (..), Method (..),
+                                             Parameter (..), RpcResult (..),
+                                             call, rpcError, toMethod)
 
 import           Control.Exception          (SomeException (..))
 import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
 
-import qualified Data.ByteString.Lazy   as BL
+import qualified Data.ByteString.Lazy       as BL
 
 import           Types
 

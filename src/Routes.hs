@@ -11,9 +11,13 @@ import           Controller                 (handleIndex, handleLogin,
                                              handleOAuthCallback, handleRPC)
 import           Types                      (OAuth2WebFlow (..))
 
-routes :: OAuth2WebFlow -> ScottyT TL.Text (ExceptT SomeException IO) ()
-routes flow = do
+import           Config                     (Config (..), ServerConfig (..),
+                                             getConfig)
+import           Control.Monad.Trans.Reader (ReaderT)
+
+routes :: ScottyT TL.Text (ReaderT Config (ExceptT SomeException IO)) ()
+routes = do
   get "" handleIndex
-  get "/login" (handleLogin flow)
-  get "/oauth2callback" (handleOAuthCallback flow)
+  get "/login" handleLogin
+  get "/oauth2callback" handleOAuthCallback
   post "/rpc" handleRPC
