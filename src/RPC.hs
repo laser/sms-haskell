@@ -67,7 +67,7 @@ f3 = toMethod "ProjectService.get_user_settings" f (Required "accessTokenId" :+:
 f4 :: Monad m => Method m
 f4 = toMethod "ProjectService.get_projects" f (Required "accessTokenId" :+: ())
   where f :: Monad m => String -> RpcResult m [UserProject]
-        f token = return $ [fakeUserProject]
+        f token = return [fakeUserProject]
 
 f5 :: Monad m => Method m
 f5 = toMethod "ProjectService.delete_project" f (Required "accessTokenId" :+: Required "project_id" :+: ())

@@ -7,10 +7,10 @@ module Config (
 
 import           Control.Applicative
 import           System.Environment
-import           Types (OAuth2WebFlow(..))
+import           Types               (OAuth2WebFlow (..))
 
-data Config = Config { serverConfig :: ServerConfig
-                     , oauthConfig  :: OAuth2WebFlow
+data Config = Config { serverConfig    :: ServerConfig
+                     , oauthConfig     :: OAuth2WebFlow
                      , barristerConfig :: BarristerConfig } deriving (Show)
 
 data ServerConfig = ServerConfig { serverHost :: String
@@ -35,7 +35,7 @@ getConfig = Config <$> getServerConfig <*> getOAuth2Config <*> getBarristerConfi
                     <*> getEnv "SMS_GOOGLE_LOGIN_CLIENT_SECRET"
 
     getRedirectURI =
-      (\host port -> "http://" ++ host ++ ":" ++ port ++ "/oauth2callback") <$> (getEnv "SMS_HOST")
-                                                                            <*> (getEnv "SMS_PORT")
+      (\host port -> "http://" ++ host ++ ":" ++ port ++ "/oauth2callback") <$> getEnv "SMS_HOST"
+                                                                            <*> getEnv "SMS_PORT"
 
     getBarristerConfig = BarristerConfig <$> readFile "./sms.json"

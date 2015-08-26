@@ -10,7 +10,6 @@ import           Data.String.Conversions (cs)
 import           Data.Typeable           (Typeable)
 
 import qualified Data.ByteString         as BS
-import qualified Data.ByteString         as BS
 import qualified Data.Text.Lazy          as TL
 
 data OAuth2WebFlow = OAuth2WebFlow { scope        :: String

@@ -20,7 +20,8 @@ import           Web.Scotty.Trans           (ActionT, ScottyT, body, get, html,
                                              param, post, raise, raw, redirect,
                                              setHeader, text)
 
-import           Config                     (Config (..), ServerConfig (..), BarristerConfig (..))
+import           Config                     (BarristerConfig (..), Config (..),
+                                             ServerConfig (..))
 import           Google.OAuth2.AuthFlow     (getAccessToken,
                                              getAuthorizationURL)
 import qualified Google.OAuth2.UserInfo     as UI (get)
@@ -29,7 +30,7 @@ import           RPC                        (dispatch)
 import           Types
 
 handleIndex  :: ActionT TL.Text (ReaderT Config (ExceptT SomeException IO)) ()
-handleIndex = html $ "<h1>Welcome</h1><a href=\"/login\">click here to log in</a>"
+handleIndex = html "<h1>Welcome</h1><a href=\"/login\">click here to log in</a>"
 
 handleLogin :: ActionT TL.Text (ReaderT Config (ExceptT SomeException IO)) ()
 handleLogin = do
@@ -70,4 +71,4 @@ handleRPC = do
         Nothing -> lift . lift . throwE . toException $ WAEError "RPC Error1!"
     Nothing -> lift . lift . throwE . toException $ WAEError "RPC Error2!"
   where mkRawResponse :: String -> String -> String -> String
-        mkRawResponse cid version result = printf "{ \"id\": \"%s\", \"version\": \"%s\", \"result\": %s }" cid version result
+        mkRawResponse = printf "{ \"id\": \"%s\", \"version\": \"%s\", \"result\": %s }"
