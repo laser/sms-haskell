@@ -33,15 +33,15 @@ handleIndex = html $ "<h1>Welcome</h1><a href=\"/login\">click here to log in</a
 
 handleLogin :: ActionT TL.Text (ReaderT Config (ExceptT SomeException IO)) ()
 handleLogin = do
-  cfg <- lift $ ask
-  url <- liftIO . getAuthorizationURL $ oauthConfig cfg
+  cfg <- lift $ asks oauthConfig
+  url <- liftIO (getAuthorizationURL cfg)
   redirect $ cs url
 
 handleOAuthCallback :: ActionT TL.Text (ReaderT Config (ExceptT SomeException IO)) ()
 handleOAuthCallback = do
-  cfg <- lift $ ask
+  cfg   <- lift $ asks oauthConfig
   code  <- param "code"
-  token <- lift . lift $ getAccessToken (oauthConfig cfg) code
+  token <- lift . lift $ getAccessToken cfg code
   info  <- lift . lift $ UI.get token
 
   case info of
