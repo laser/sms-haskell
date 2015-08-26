@@ -11,7 +11,7 @@ import           Control.Exception          (SomeException (..), toException)
 import           Control.Monad.Trans        (liftIO)
 import           Control.Monad.Trans.Class  (lift)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
-import           Control.Monad.Trans.Reader (ReaderT, ask)
+import           Control.Monad.Trans.Reader (ReaderT, ask, asks)
 import           Data.Aeson                 (decode)
 import           Data.String.Conversions    (cs)
 import qualified Data.Text.Lazy             as TL
@@ -20,7 +20,7 @@ import           Web.Scotty.Trans           (ActionT, ScottyT, body, get, html,
                                              param, post, raise, raw, redirect,
                                              setHeader, text)
 
-import           Config                     (Config (..), ServerConfig (..))
+import           Config                     (Config (..), ServerConfig (..), BarristerConfig (..))
 import           Google.OAuth2.AuthFlow     (getAccessToken,
                                              getAuthorizationURL)
 import qualified Google.OAuth2.UserInfo     as UI (get)
@@ -58,9 +58,9 @@ handleRPC = do
   x <- body
   case decode x of
     Just Request { method = "barrister-idl", cid = cid', version = version' } -> do
-      contents <- liftIO $ readFile "./sms.json"
+      idl <- lift $ asks (idl . barristerConfig)
       setHeader "Content-Type" "application/json"
-      raw . cs $ mkRawResponse cid' version' contents
+      raw . cs $ mkRawResponse cid' version' idl
     Just _ -> do
       result <- liftIO $ dispatch x
       case result of
