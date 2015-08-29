@@ -1,13 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Persistence (
-  login
-) where
+module Persistence where
 
-import           Control.Error              (syncIO)
 import           Control.Exception          (SomeException)
 import           Control.Monad.Trans.Except (ExceptT)
 import           Data.Int                   (Int64)
+
+import           Control.Error              (syncIO)
 import           Database.MySQL.Simple      (ConnectInfo (..), Connection,
                                              close, connect, defaultConnectInfo,
                                              execute)
@@ -21,13 +20,6 @@ withConnection f = do
   res <- f con
   close con
   return res
-
-login :: String -> String -> String -> String -> ExceptT SomeException IO String
-login token userId email name =
-  upsertUser userId email name
-  >> recordLogin token userId
-  >> linkProjectAccess userId email
-  >> return token
 
 upsertUser :: String -> String -> String -> ExceptT SomeException IO Int64
 upsertUser userId email name = syncIO . withConnection $ \conn ->
