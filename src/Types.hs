@@ -91,7 +91,7 @@ data User = User { user_user_id                    :: String
                  , user_default_language           :: Maybe Language
                  , user_default_gps_format         :: Maybe GPSFormat
                  , user_default_measurement_system :: Maybe MeasurementSystem
-                 , user_default_google_map_type    :: Maybe GoogleMapType } deriving (Show, Eq)
+                 , user_default_google_map_type    :: GoogleMapType } deriving (Show, Eq)
 
 data AccessType = OWNER | COLLABORATOR | READONLY | PUBLIC deriving (Eq, Show)
 

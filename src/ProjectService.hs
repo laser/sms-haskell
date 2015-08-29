@@ -6,7 +6,7 @@ import           Control.Exception          (SomeException (..))
 import           Control.Monad.Trans        (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
 
-import qualified Persistence                as Repo
+import qualified Persistence                as P
 import           Types
 
 fakeUserProject = UserProject { userproject_project_id = 1
@@ -23,14 +23,20 @@ fakeUser = User { user_user_id = "1234"
                 , user_default_language = Just EN_US
                 , user_default_gps_format = Just DECIMAL
                 , user_default_measurement_system = Just IMPERIAL
-                , user_default_google_map_type = Just SATELLITE }
+                , user_default_google_map_type = SATELLITE }
 
 login :: String -> String -> String -> String -> ExceptT SomeException IO String
-login token userId email name =
-  Repo.upsertUser userId email name
-  >> Repo.recordLogin token userId
-  >> Repo.linkProjectAccess userId email
-  >> return token
+login token userId email name = do
+  attempt <- P.getUserById userId
+  case attempt of
+    Just (User uid email' name' _ lang gps meas gmt) ->
+      P.updateUser uid (Just email) (Just name) lang gps meas gmt
+    Nothing ->
+      P.insertUser userId (Just email) (Just name) Nothing Nothing Nothing SATELLITE
+  P.recordLogin token userId
+  P.linkProjectAccess userId email
+
+  return token
 
 addProject :: String -> String -> ExceptT SomeException IO Project
 addProject token name = do
