@@ -86,13 +86,12 @@ instance A.FromJSON UserProject where
 
 data User = User { user_user_id                    :: String
                  , user_email                      :: Maybe String
-                 , user_name                       :: String
+                 , user_name                       :: Maybe String
                  , user_date_created               :: Integer
                  , user_default_language           :: Maybe Language
                  , user_default_gps_format         :: Maybe GPSFormat
                  , user_default_measurement_system :: Maybe MeasurementSystem
-                 , user_default_google_map_type    :: Maybe GoogleMapType
-                 , user_needs_to_update_settings   :: Maybe Bool } deriving (Show, Eq)
+                 , user_default_google_map_type    :: Maybe GoogleMapType } deriving (Show, Eq)
 
 data AccessType = OWNER | COLLABORATOR | READONLY | PUBLIC deriving (Eq, Show)
 
@@ -134,5 +133,4 @@ instance A.ToJSON User where
                       , "default_language" .= user_default_language u
                       , "default_gps_format" .= user_default_gps_format u
                       , "default_measurement_system" .= user_default_measurement_system u
-                      , "default_google_map_type" .= user_default_google_map_type u
-                      , "needs_to_update_settings" .= user_needs_to_update_settings u ]
+                      , "default_google_map_type" .= user_default_google_map_type u ]

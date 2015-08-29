@@ -12,8 +12,8 @@ import           Text.Printf                (printf)
 import           Data.Aeson                 (decode)
 import           Data.String.Conversions    (cs)
 import           Data.Text.Lazy             (Text)
-import           Web.Scotty.Trans           (ActionT, body, get, html,
-                                             param, post, raise, raw, redirect,
+import           Web.Scotty.Trans           (ActionT, body, get, html, param,
+                                             post, raise, raw, redirect,
                                              setHeader, text)
 
 import           Config                     as C

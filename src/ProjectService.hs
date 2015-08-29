@@ -18,13 +18,12 @@ fakeProject = Project { project_project_id = 1
 
 fakeUser = User { user_user_id = "1234"
                 , user_email = Just "hello@example.com"
-                , user_name = "heywood"
+                , user_name = Just "heywood"
                 , user_date_created = 12345
                 , user_default_language = Just EN_US
                 , user_default_gps_format = Just DECIMAL
                 , user_default_measurement_system = Just IMPERIAL
-                , user_default_google_map_type = Just SATELLITE
-                , user_needs_to_update_settings = Nothing }
+                , user_default_google_map_type = Just SATELLITE }
 
 login :: String -> String -> String -> String -> ExceptT SomeException IO String
 login token userId email name =

@@ -16,6 +16,7 @@ executable sms-haskell
                       http-types,
                       json-rpc-server,
                       mtl,
+                      mysql,
                       mysql-simple,
                       scotty,
                       string-conversions,
