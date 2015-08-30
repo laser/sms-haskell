@@ -6,6 +6,7 @@ import           Control.Applicative     (pure)
 import           Control.Exception       (Exception)
 import           Data.Aeson              ((.:), (.:?), (.=))
 import qualified Data.Aeson              as A
+import           Data.Int                (Int64)
 import           Data.String.Conversions (cs)
 import           Data.Typeable           (Typeable)
 
@@ -92,6 +93,19 @@ data User = User { user_user_id                    :: String
                  , user_default_gps_format         :: Maybe GPSFormat
                  , user_default_measurement_system :: Maybe MeasurementSystem
                  , user_default_google_map_type    :: GoogleMapType } deriving (Show, Eq)
+
+
+
+data ProjectAccess = ProjectAccess { projectaccess_project_access_id :: Int
+                                   , projectaccess_project_id        :: Int
+                                   , projectaccess_user_id           :: Maybe String
+                                   , projectaccess_email             :: Maybe String
+                                   , projectaccess_access_type       :: Maybe AccessType } deriving (Eq, Show)
+
+data Login = Login { login_login_id     :: Int
+                   , login_access_token :: String
+                   , login_user_id      :: String
+                   , login_expiry_time  :: Int64 } deriving (Eq, Show)
 
 data AccessType = OWNER | COLLABORATOR | READONLY | PUBLIC deriving (Eq, Show)
 

@@ -7,7 +7,7 @@ import           Control.Exception                  (SomeException, throw)
 import           Control.Monad.Trans.Except         (ExceptT)
 import           Data.ByteString.Char8              (unpack)
 import           Data.Int                           (Int64)
-import Data.Maybe (listToMaybe)
+import           Data.Maybe                         (listToMaybe)
 
 import           Control.Error                      (syncIO)
 import qualified Database.MySQL.Base.Types          as M
@@ -89,6 +89,24 @@ instance M.Result GPSFormat where
                                          "GPSFormat"
                                          "UnexpectedNull"
 
+instance M.Result AccessType where
+  convert field Nothing = throw $ M.UnexpectedNull (show (M.fieldType field))
+                                                   "AccessType"
+                                                   "UnexpectedNull"
+  convert field (Just value)
+    | M.fieldType field `elem` [M.VarChar, M.VarString, M.String] =
+      case unpack value of
+        "OWNER" -> OWNER
+        "COLLABORATOR" -> COLLABORATOR
+        "READONLY" -> READONLY
+        "PUBLIC" -> PUBLIC
+        _       -> throw $ M.ConversionFailed (show (M.fieldType field))
+                                              "AccessType"
+                                              "UnexpectedNull"
+    | otherwise = throw $ M.Incompatible (show (M.fieldType field))
+                                         "AccessType"
+                                         "UnexpectedNull"
+
 instance M.QueryResults User where
   convertResults [fa, fb, fc, fd, fe, ff, fg, fh]
                  [va, vb, vc, vd, ve, vf, vg, vh] = User _userId
@@ -109,6 +127,32 @@ instance M.QueryResults User where
           !_defaultGoogleMapType = M.convert fh vh
   convertResults fs vs = M.convertError fs vs 8
 
+instance M.QueryResults ProjectAccess where
+  convertResults [fa, fb, fc, fd, fe]
+                 [va, vb, vc, vd, ve] = ProjectAccess _projectAccessId
+                                                      _projectId
+                                                      _userId
+                                                      _email
+                                                      _accessType
+    where !_projectAccessId = M.convert fa va
+          !_projectId = M.convert fb vb
+          !_userId = M.convert fc vc
+          !_email = M.convert fd vd
+          !_accessType = M.convert fe ve
+  convertResults fs vs = M.convertError fs vs 5
+
+instance M.QueryResults Login where
+  convertResults [fa, fb, fc, fd]
+                 [va, vb, vc, vd] = Login _loginId
+                                          _accessToken
+                                          _userId
+                                          _expiryTime
+    where !_loginId = M.convert fa va
+          !_accessToken = M.convert fb vb
+          !_userId = M.convert fc vc
+          !_expiryTime = M.convert fd vd
+  convertResults fs vs = M.convertError fs vs 4
+
 instance M.Param GoogleMapType where
   render = M.render . show
 
@@ -121,10 +165,11 @@ instance M.Param Language where
 instance M.Param GPSFormat where
   render = M.render . show
 
+instance M.Param AccessType where
+  render = M.render . show
+
 dbConfig :: M.ConnectInfo
 dbConfig = M.defaultConnectInfo { M.connectDatabase = "sms" }
-
-data FieldUpdate a = Ignore | Update (Maybe a)
 
 withConnection :: (M.Connection -> IO a) -> IO a
 withConnection f = do
@@ -190,16 +235,66 @@ updateUser userId email name lang gps meas gmt = syncIO . withConnection $ \conn
      \ WHERE user_id=? "
      (email, name, lang, gps, meas, gmt, userId)
 
-linkProjectAccess ::
+getProjectAccessByEmail ::
+  String
+  -> ExceptT SomeException IO [ProjectAccess]
+getProjectAccessByEmail email = syncIO . withConnection $ \conn -> do
+   M.query conn
+     " SELECT project_access_id, project_id, user_id, email, access_type \
+     \ FROM `project_access` \
+     \ WHERE email=(?) "
+     [email]
+
+updateProjectAccess ::
+  Int
+  -> Maybe String
+  -> Maybe String
+  -> Maybe AccessType
+  -> ExceptT SomeException IO Int64
+updateProjectAccess projectAccessId userId email accessType = syncIO . withConnection $ \conn ->
+  M.execute conn
+     " UPDATE `project_access` \
+     \ SET user_id=?, \
+     \     email=?, \
+     \     access_type=? \
+     \ WHERE project_access_id=? "
+     (userId, email, accessType, projectAccessId)
+
+getLoginByUserId ::
+  String
+  -> ExceptT SomeException IO (Maybe Login)
+getLoginByUserId userId = syncIO . withConnection $ \conn ->
+  query1 conn
+    " SELECT login_id, access_token, user_id, expiry_time \
+    \ FROM `logins` \
+    \ WHERE user_id=? "
+    [userId]
+
+updateLogin ::
+  Int
+  -> String
+  -> String
+  -> Int64
+  -> ExceptT SomeException IO Int64
+updateLogin loginId accessToken userId expiryTime = syncIO . withConnection $ \conn ->
+  M.execute conn
+    " UPDATE `logins` \
+    \ SET access_token=?, \
+    \     user_id=?, \
+    \     expiry_time=? \
+    \ WHERE login_id=? "
+    (accessToken, userId, expiryTime, loginId)
+
+insertLogin ::
   String
   -> String
+  -> Int64
   -> ExceptT SomeException IO Int64
-linkProjectAccess userId email = syncIO . withConnection $ \conn ->
+insertLogin accessToken userId expiryTime = syncIO . withConnection $ \conn ->
   M.execute conn
-    " UPDATE `project_access` \
-    \ SET user_id = (?) \
-    \ WHERE email=(?) "
-    (userId, email)
+     " INSERT INTO `logins` (access_token, user_id, expiry_time) \
+     \ VALUES (?, ?, ?)"
+     (accessToken, userId, expiryTime)
 
 recordLogin ::
   String

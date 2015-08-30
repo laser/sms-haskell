@@ -3,8 +3,10 @@ module ProjectService where
 
 import           Control.Error.Util         (hoistEither)
 import           Control.Exception          (SomeException (..))
+import           Control.Monad              (forM_)
 import           Control.Monad.Trans        (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT, throwE)
+import           Data.Time.Clock.POSIX      (getPOSIXTime)
 
 import qualified Persistence                as P
 import           Types
@@ -27,16 +29,29 @@ fakeUser = User { user_user_id = "1234"
 
 login :: String -> String -> String -> String -> ExceptT SomeException IO String
 login token userId email name = do
-  attempt <- P.getUserById userId
-  case attempt of
-    Just (User uid email' name' _ lang gps meas gmt) ->
-      P.updateUser uid (Just email) (Just name) lang gps meas gmt
-    Nothing ->
-      P.insertUser userId (Just email) (Just name) Nothing Nothing Nothing SATELLITE
-  P.recordLogin token userId
-  P.linkProjectAccess userId email
+  let
+    upsertUser = do
+      u <- P.getUserById userId
+      case u of
+        Just (User uid email' name' _ lang gps meas gmt) ->
+          P.updateUser uid (Just email) (Just name) lang gps meas gmt
+        Nothing ->
+          P.insertUser userId (Just email) (Just name) Nothing Nothing Nothing SATELLITE
 
-  return token
+    linkProjectAccess = do
+      pas <- P.getProjectAccessByEmail email
+      forM_ pas (\(ProjectAccess paid _ _ _ at) -> P.updateProjectAccess paid (Just email) (Just userId) at)
+
+    recordLogin = do
+      l <- P.getLoginByUserId userId
+      utcms <- liftIO $ getPOSIXTime >>= return . (+86400000) . (*1000) . round
+      case l of
+        Just (Login lid _ uid _) ->
+          P.updateLogin lid token uid utcms
+        Nothing ->
+          P.insertLogin token userId utcms
+
+  upsertUser >> linkProjectAccess >> recordLogin >> (return token)
 
 addProject :: String -> String -> ExceptT SomeException IO Project
 addProject token name = do
