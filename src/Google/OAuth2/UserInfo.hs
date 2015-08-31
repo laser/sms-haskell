@@ -5,16 +5,16 @@ module Google.OAuth2.UserInfo (
 ) where
 
 import           Control.Arrow              (left)
-import           Control.Error.Util         (hoistEither)
-import           Control.Exception          (SomeException (..), toException)
+import           Control.Exception          (SomeException, toException)
 import           Control.Monad.Trans.Except (ExceptT)
+
+import           Control.Error.Util         (hoistEither)
 import           Data.Aeson                 (eitherDecode)
 import           Data.String.Conversions    (cs)
 import           Network.HTTP.Conduit       (parseUrl, requestHeaders)
 
-import           Google.OAuth2.APIClient    (issueRequest)
-import           Types                      (GoogleUserInfo (..),
-                                             JSONDecodeError (..))
+import           Google.OAuth2.APIClient
+import           Types
 
 import qualified Data.ByteString            as BS
 

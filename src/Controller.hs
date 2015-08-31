@@ -29,7 +29,7 @@ handleIndex = html "<h1>Welcome</h1><a href=\"/login\">click here to log in</a>"
 handleLogin :: ActionT Text (ReaderT Config (ExceptT SomeException IO)) ()
 handleLogin = do
   cfg <- lift $ asks C.oauthConfig
-  url <- liftIO (AF.getAuthorizationURL cfg)
+  url <- lift . lift $ AF.getAuthorizationURL cfg
   redirect $ cs url
 
 handleOAuthCallback :: ActionT Text (ReaderT C.Config (ExceptT SomeException IO)) ()
