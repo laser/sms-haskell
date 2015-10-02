@@ -7,6 +7,7 @@ module Google.OAuth2.UserInfo (
 import           Control.Arrow              (left)
 import           Control.Exception          (SomeException, toException)
 import           Control.Monad.Trans.Except (ExceptT)
+import Data.ByteString (append)
 
 import           Control.Error.Util         (hoistEither)
 import           Data.Aeson                 (eitherDecode)
@@ -14,13 +15,12 @@ import           Data.String.Conversions    (cs)
 import           Network.HTTP.Conduit       (parseUrl, requestHeaders)
 
 import           Google.OAuth2.APIClient
-import           Types
+import qualified Google.OAuth2.Types.GoogleUserInfo as G
+import qualified Types.JSONDecodeError as J
 
-import qualified Data.ByteString            as BS
-
-get :: String -> ExceptT SomeException IO GoogleUserInfo
+get :: String -> ExceptT SomeException IO G.GoogleUserInfo
 get token = do
   req  <- parseUrl "https://www.googleapis.com/oauth2/v2/userinfo"
-  body <- issueRequest req { requestHeaders = [("Authorization", BS.append "Bearer " (cs token))] }
+  body <- issueRequest req { requestHeaders = [("Authorization", append "Bearer " (cs token))] }
 
-  hoistEither $ left (toException . JSONDecodeError) $ eitherDecode body
+  hoistEither $ left (toException . J.JSONDecodeError) $ eitherDecode body

@@ -14,7 +14,6 @@ import           Network.JsonRpc.Server     ((:+:) (..), Method,
                                              call, rpcError, toMethod)
 
 import           ProjectService
-import           Types
 
 
 -- | Runs a failable computation and transmutes error
