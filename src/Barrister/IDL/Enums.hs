@@ -7,17 +7,17 @@ import Data.Aeson (FromJSON, ToJSON)
 
 data YesNo = Y | N deriving (Generic)
 
-data FieldType = NUMBER | STRING | IMAGE | IMAGE_LIST deriving (Generic)
+data FieldType = NUMBER | STRING | IMAGE | IMAGE_LIST deriving (Show, Generic)
 
-data AccessType = OWNER | COLLABORATOR | READONLY | PUBLIC deriving (Generic)
+data AccessType = OWNER | COLLABORATOR | READONLY | PUBLIC deriving (Show, Generic)
 
-data Language = EN_US | ES_LA | FR_FR deriving (Generic)
+data Language = EN_US | ES_LA | FR_FR deriving (Show, Generic)
 
-data GPSFormat = DECIMAL | DEGREE | UTMWGS84 deriving (Generic)
+data GPSFormat = DECIMAL | DEGREE | UTMWGS84 deriving (Show, Generic)
 
-data MeasurementSystem = METRIC | IMPERIAL deriving (Generic)
+data MeasurementSystem = METRIC | IMPERIAL deriving (Show, Generic)
 
-data GoogleMapType = ROADMAP | SATELLITE | HYBRID | TERRAIN deriving (Generic)
+data GoogleMapType = ROADMAP | SATELLITE | HYBRID | TERRAIN deriving (Show, Generic)
 
 instance FromJSON YesNo
 instance ToJSON YesNo

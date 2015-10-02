@@ -7,10 +7,11 @@ module Config (
 
 import           Control.Applicative
 import           System.Environment
-import           Types               (OAuth2WebFlow (..))
+
+import Google.OAuth2.Types.AuthFlow( AuthFlow(..) )
 
 data Config = Config { serverConfig    :: ServerConfig
-                     , oauthConfig     :: OAuth2WebFlow
+                     , oauthConfig     :: AuthFlow
                      , barristerConfig :: BarristerConfig } deriving (Show)
 
 data ServerConfig = ServerConfig { serverHost :: String
@@ -26,7 +27,7 @@ getConfig = Config <$> getServerConfig <*> getOAuth2Config <*> getBarristerConfi
                    <*> (read <$> getEnv "SMS_PORT")
 
     getOAuth2Config =
-      OAuth2WebFlow "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+      WebFlow "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
                     "https://accounts.google.com/o/oauth2/auth"
                     "https://accounts.google.com/o/oauth2/token"
                     "code"

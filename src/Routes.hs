@@ -11,7 +11,6 @@ import           Web.Scotty.Trans           (ScottyT, get, param, post, text)
 
 import           Config
 import           Controller
-import           Types
 
 routes :: ScottyT Text (ReaderT Config (ExceptT SomeException IO)) ()
 routes = do

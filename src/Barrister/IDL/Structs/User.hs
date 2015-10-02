@@ -2,6 +2,7 @@
 
 module Barrister.IDL.Structs.User where
 
+import           Data.Int                (Int64)
 import GHC.Generics (Generic)
 
 import Data.Aeson (FromJSON, ToJSON)
@@ -11,7 +12,7 @@ import Barrister.IDL.Enums (Language, GPSFormat, MeasurementSystem, GoogleMapTyp
 data User = User
   { email :: Maybe String
   , name :: String
-  , date_created :: Int
+  , date_created :: Int64
   , user_id :: String
   , default_language :: Maybe Language
   , default_gps_format :: Maybe GPSFormat

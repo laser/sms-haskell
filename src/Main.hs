@@ -20,7 +20,6 @@ import           Config                               (Config (..),
                                                        ServerConfig (..),
                                                        getConfig)
 import           Routes                               (routes)
-import           Types                                (OAuth2WebFlow (..))
 
 main :: IO ()
 main = do

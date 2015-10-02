@@ -22,39 +22,41 @@ import           Network.HTTP.Conduit       (HttpException (..), Request (..),
                                              urlEncodedBody)
 
 import           Google.OAuth2.APIClient
-import           Types
+import qualified Google.OAuth2.Types.AuthFlow as A
+import qualified Google.OAuth2.Types.AuthTokens as T
+import qualified Types.JSONDecodeError as J
 
-getAuthorizationRequest :: OAuth2WebFlow -> ExceptT SomeException IO Request
-getAuthorizationRequest flow = syncIO $ do
-  request <- parseUrl $ authURI flow
+getAuthorizationRequest :: A.AuthFlow -> ExceptT SomeException IO Request
+getAuthorizationRequest flow@(A.WebFlow s a t rt ru ci cs') = syncIO $ do
+  request <- parseUrl $ a
 
-  let params = [ ("scope", Just . cs $ scope flow)
-               , ("client_id", Just . cs $ clientId flow)
-               , ("redirect_uri", Just . cs $ redirectURI flow)
-               , ("response_type", Just . cs $ responseType flow) ]
+  let params = [ ("scope", Just $ cs s)
+               , ("client_id", Just $ cs ci)
+               , ("redirect_uri", Just $ cs ru)
+               , ("response_type", Just $ cs rt) ]
 
   return $ setQueryString params request
 
-getExchangeRequest :: OAuth2WebFlow -> String -> ExceptT SomeException IO Request
-getExchangeRequest flow code = syncIO $ do
-  request <- parseUrl $ tokenURI flow
+getExchangeRequest :: A.AuthFlow -> String -> ExceptT SomeException IO Request
+getExchangeRequest flow@(A.WebFlow s a t rt ru ci cs') code = syncIO $ do
+  request <- parseUrl $ t
 
   let params = [ ("code", cs code)
-               , ("client_id", cs $ clientId flow)
-               , ("client_secret", cs $ clientSecret flow)
-               , ("redirect_uri", cs $ redirectURI flow)
+               , ("client_id", cs ci)
+               , ("client_secret", cs cs')
+               , ("redirect_uri", cs ru)
                , ("grant_type", "authorization_code") ]
 
   return $ urlEncodedBody params request
 
-getAuthorizationURL :: OAuth2WebFlow -> ExceptT SomeException IO String
+getAuthorizationURL :: A.AuthFlow -> ExceptT SomeException IO String
 getAuthorizationURL flow = do
   req <- getAuthorizationRequest flow
   return . show . getUri $ req
 
-getAccessToken :: OAuth2WebFlow -> String -> ExceptT SomeException IO String
+getAccessToken :: A.AuthFlow -> String -> ExceptT SomeException IO String
 getAccessToken flow code = do
   request <- getExchangeRequest flow code
   body    <- issueRequest request
-  info    <- hoistEither $ left (toException . JSONDecodeError) $ eitherDecode body
-  return . cs . accessToken $ info
+  info    <- hoistEither $ left (toException . J.JSONDecodeError) $ eitherDecode body
+  return . cs . T.access_token $ info
